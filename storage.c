@@ -57,7 +57,7 @@ storage_write(const char* path, const char* buf, size_t size, off_t offset)
 }
 
 int
-storage_read(const char* path, const char* buf, size_t size, off_t offset)
+storage_read(const char* path, char* buf, size_t size, off_t offset)
 {
     inode* node = get_inode(tree_lookup(path));
     
