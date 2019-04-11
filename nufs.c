@@ -148,6 +148,7 @@ int
 nufs_truncate(const char *path, off_t size)
 {
     int rv = -1;
+    rv = storage_truncate(path, size);
     printf("truncate(%s, %ld bytes) -> %d\n", path, size, rv);
     return rv;
 }
@@ -178,8 +179,8 @@ int
 nufs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     int rv = -1;
-    printf("write(%s, %ld bytes, @+%ld) -> %d\n", path, size, offset, rv);
     rv = storage_write(path, buf, size, offset);
+    printf("write(%s, %ld bytes, @+%ld) -> %d\n", path, size, offset, rv);
     return rv;
 }
 

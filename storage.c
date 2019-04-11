@@ -46,9 +46,13 @@ int
 storage_write(const char* path, const char* buf, size_t size, off_t offset)
 {
     // get the start point with the path
-    char* start = pages_get_page(tree_lookup(path));
+    inode* write_node = get_inode(tree_lookup(path));
+    char* start = pages_get_page(write_node->ptrs[0]);
     if (size + offset > 4096) {
         return -1;
+    }
+    if (size + offset > write_node->size) {
+        write_node->size = size + offset;
     }
     start = start + offset;
     memcpy(start, buf, size);
@@ -59,6 +63,7 @@ storage_write(const char* path, const char* buf, size_t size, off_t offset)
 int
 storage_read(const char* path, char* buf, size_t size, off_t offset)
 {
+    printf("storage_read called, buffer is\n%s\n", buf);
     inode* node = get_inode(tree_lookup(path));
     
     char* data = pages_get_page(node->ptrs[0]);
