@@ -62,16 +62,40 @@ free_inode() {
 
 // grows the inode, if size gets too big, it allocates a new page if possible
 int grow_inode(inode* node, int size) {
-    if (size > 4096) {
-        // we will want to allocate pages for the challenge, but for now, error
-        return -1;
+    for (i = (node->size / 4096) + 1; i <= size / 4096; i ++) {
+        if (i < nptrs) { //we can use direct ptrs
+            node->ptrs[i] = alloc_page(); //alloc a page
+        } else { //need to use indirect
+            if (node->iptr == NULL) { //get a page if we don't have one
+                node->iptr = alloc_page();
+            }
+            int* iptrs = pages_get_page(node->iptr); //retrieve memory loc.
+            iptrs[i - nptrs] = alloc_page(); //add another page
+        }
     }
-   node->size = size;
-   return node->ptrs[0];
+    node->size = size;
+    return 0;
 }
 
 // shrinks an inode size and deallocates pages if we've freed them up
-int shrink_inode(inode* node, int size);
+int shrink_inode(inode* node, int size) {
+    for (i = (node->size / 4096); i > size / 4096; i --) {
+        if (i < nptrs) { //we're in direct ptrs
+            free_page(node->ptrs[i]); //free the page
+            node->ptrs[i] = 0;
+        } else { //need to use indirect
+            int* iptrs = pages_get_page(node->iptr); //retrieve memory loc.
+            free_page(iptrs[i - nptrs]); //free the page
+            iptrs[i-nptrs] = 0;
+
+            if (i == nptrs) { //if that was the last thing on the page
+                free_page(node->iptr); //we don't need it anymore
+            }
+        }
+    } 
+    node->size = size;
+    return 0;  
+}
 
 // gets the page number for the inode
 int inode_get_pnum(inode* node, int fpn);

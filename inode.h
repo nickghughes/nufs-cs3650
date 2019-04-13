@@ -5,11 +5,13 @@
 
 #include "pages.h"
 
+#define nptrs 2
+
 typedef struct inode {
     int refs; // reference count
     int mode; // permission & type
     int size; // bytes
-    int ptrs[2]; // direct pointers
+    int ptrs[nptrs]; // direct pointers
     int iptr; // single indirect pointer
 } inode;
 
