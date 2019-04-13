@@ -6,12 +6,14 @@
 #include "directory.h"
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 /*
 typedef struct dirent {
     char name[DIR_NAME]; // The name of the directory
     int  inum; // the number of the inode in the inode table?
-    char _reserved[12]; // What the fuck is this??
+    char used; // is this used?
+    char _reserved[11]; // rounding things out
 } dirent; */
 
 
@@ -76,17 +78,43 @@ tree_lookup(const char* path) {
 int directory_put(inode* dd, const char* name, int inum) {
     int numentries = dd->size / sizeof(dirent);
     dirent* entries = pages_get_page(dd->ptrs[0]);
+    int alloced = 0; // we want to keep track of whether we've alloced or not
+
+    // building the new directory entry;
     dirent new;
     strncpy(new.name, name, DIR_NAME); 
     new.inum = inum;
-    entries[numentries] = new;
-    dd->size = dd->size + sizeof(dirent);
+    new.used = 1;
+
+    for (int ii = 1; ii < dd->size / sizeof(dirent); ++ii) {
+        if (entries[ii].used == 0) {
+            entries[ii] = new;
+            alloced = 1;
+        }
+    }
+    
+    if (!alloced) {
+        entries[numentries] = new;
+        dd->size = dd->size + sizeof(dirent);
+    }
+
     printf("running dir_put, putting %s, inum %d, on page %d\n", name, inum, dd->ptrs[0]);
     return 0;
 }
 
-// should this free the inode? I think so...
-int directory_delete(inode* dd, const char* name);
+// this sets the matching directory to unused and takes a ref off its inode
+int directory_delete(inode* dd, const char* name) {
+    dirent* entries = pages_get_page(dd->ptrs[0]);
+    for (int ii = 0; ii < dd->size / sizeof(dirent); ++ii) {
+        if (entries[ii].name == name) {
+            entries[ii].used = 0;
+            inode* dirnode = get_inode(entries[ii].inum);
+            dirnode->refs = dirnode->refs - 1;
+            return 0;
+        }
+    }
+    return -ENOENT;
+}
 
 // list of directories where? at the path? wait... this is for ls
 slist* directory_list(const char* path) {

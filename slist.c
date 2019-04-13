@@ -57,3 +57,65 @@ s_split(const char* text, char delim)
     return s_cons(part, rest);
 }
 
+char*
+s_reconstruct(slist* list, char delim)
+{
+    // Garbage in, Garbage out
+    if (list == NULL)
+        return NULL;
+    
+    slist* tmplist = list;
+    int curlen = 0;
+    char* fullstr = malloc(1); // min length = null term
+    
+    while (tmplist != NULL) {
+        curlen = strlen(list->data);
+
+        if (curlen == 0)
+            curlen += 1;
+
+        // realloc to make room for the new string
+        fullstr = realloc(fullstr, curlen + strlen(fullstr) + 1);
+
+        if (strcmp(tmplist->data, "") == 0)
+            strncat(fullstr, &delim, 1);
+        else 
+            strncat(fullstr, tmplist->data, curlen);
+
+        tmplist = tmplist->next;
+    }
+}
+
+slist*
+s_droplast(slist* xs)
+{
+    if (xs == NULL || xs->next == NULL) {
+        return NULL;
+    }
+
+    slist* tmplist = xs;
+    slist* newlist = NULL;
+
+    while (tmplist->next != NULL) {
+        s_cons(tmplist->data, newlist);
+        tmplist = tmplist->next;
+    }
+
+    return newlist;
+}
+
+char*
+s_getlast(slist* xs)
+{
+    if(xs == NULL) {
+        return NULL;
+    }
+
+    slist* tmplist = xs;
+
+    while (tmplist->next != NULL) {
+        tmplist = tmplist->next;
+    }
+
+    return tmplist->data;
+}
