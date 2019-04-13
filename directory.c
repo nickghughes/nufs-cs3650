@@ -4,6 +4,7 @@
 #include "pages.h"
 #include "inode.h"
 #include "directory.h"
+#include "bitmap.h"
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -104,15 +105,20 @@ int directory_put(inode* dd, const char* name, int inum) {
 
 // this sets the matching directory to unused and takes a ref off its inode
 int directory_delete(inode* dd, const char* name) {
+    printf("running dir delete on filename %s\n", name);
     dirent* entries = pages_get_page(dd->ptrs[0]);
+    printf("got direntries at block %d", dd->ptrs[0]);
     for (int ii = 0; ii < dd->size / sizeof(dirent); ++ii) {
-        if (entries[ii].name == name) {
+        if (strcmp(entries[ii].name, name) == 0) {
+            printf("found a deletion match at entry %d\n", ii);
             entries[ii].used = 0;
             inode* dirnode = get_inode(entries[ii].inum);
             dirnode->refs = dirnode->refs - 1;
+            bitmap_put(get_inode_bitmap(), entries[ii].inum, 0);
             return 0;
         }
     }
+    printf("no file found! cannot delete");
     return -ENOENT;
 }
 
@@ -124,7 +130,9 @@ slist* directory_list(const char* path) {
     dirent* dirs = pages_get_page(w_inode->ptrs[0]);
     slist* dirnames = NULL; 
     for (int ii = 0; ii < numdirs; ++ii) {
-        dirnames = s_cons(dirs[ii].name, dirnames);
+        if (dirs[ii].used) {
+            dirnames = s_cons(dirs[ii].name, dirnames);
+        }
     }
     return dirnames;
 }

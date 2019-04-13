@@ -60,30 +60,30 @@ s_split(const char* text, char delim)
 char*
 s_reconstruct(slist* list, char delim)
 {
+    char* fullstr = malloc(2); // min length = null term + delim
     // Garbage in, Garbage out
-    if (list == NULL)
-        return NULL;
+    if (list == NULL) {
+        fullstr[0] = delim;
+        fullstr[1] = '\0';
+        return fullstr;
+    }
     
     slist* tmplist = list;
     int curlen = 0;
-    char* fullstr = malloc(1); // min length = null term
     
     while (tmplist != NULL) {
         curlen = strlen(list->data);
 
-        if (curlen == 0)
-            curlen += 1;
-
         // realloc to make room for the new string
         fullstr = realloc(fullstr, curlen + strlen(fullstr) + 1);
 
-        if (strcmp(tmplist->data, "") == 0)
-            strncat(fullstr, &delim, 1);
-        else 
-            strncat(fullstr, tmplist->data, curlen);
+        strncat(fullstr, tmplist->data, curlen);
+        strncat(fullstr, &delim, 1);
 
         tmplist = tmplist->next;
     }
+
+    return fullstr;
 }
 
 slist*

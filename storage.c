@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
 #include "slist.h"
 #include "pages.h"
 #include "directory.h"
@@ -133,6 +134,8 @@ storage_unlink(const char* path) {
     int rv = directory_delete(parent, nodename);
 
     s_free(pathlist);
+    free(parentpath);
+    free(nodename);
 
     return rv;
 }
