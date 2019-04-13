@@ -10,6 +10,7 @@
 #include "directory.h"
 #include "inode.h"
 #include "bitmap.h"
+#include "util.h"
 
 void
 storage_init(const char* path) {
@@ -43,39 +44,6 @@ storage_stat(const char* path, struct stat* st) {
 }
 
 int 
-storage_write(const char* path, const char* buf, size_t size, off_t offset)
-{
-    // get the start point with the path
-    inode* write_node = get_inode(tree_lookup(path));
-    char* start = pages_get_page(write_node->ptrs[0]);
-    if (size + offset > 4096) {
-        return -1;
-    }
-    if (size + offset > write_node->size) {
-        write_node->size = size + offset;
-    }
-    start = start + offset;
-    memcpy(start, buf, size);
-    return size;
-    
-}
-
-int
-storage_read(const char* path, char* buf, size_t size, off_t offset)
-{
-    printf("storage_read called, buffer is\n%s\n", buf);
-    inode* node = get_inode(tree_lookup(path));
-    
-    char* data = pages_get_page(node->ptrs[0]);
-    data = data + offset;
-    if (size + offset > 4096) {
-        size = 4096 - offset;
-    }
-    memcpy(buf, data, size);
-    return size;
-}
-
-int 
 storage_truncate(const char *path, off_t size) {
     int inum = tree_lookup(path);
     inode* node = get_inode(inum);
@@ -85,6 +53,49 @@ storage_truncate(const char *path, off_t size) {
 	shrink_inode(node, size);
     }
     return 0;
+}
+
+int 
+storage_write(const char* path, const char* buf, size_t size, off_t offset)
+{
+    // get the start point with the path
+    inode* write_node = get_inode(tree_lookup(path));
+    if (write_node->size < size) {
+        storage_truncate(path, size);
+    }
+    int bindex = 0;
+    int nindex = offset;
+    int rem = size;
+    while (rem > 0) {
+        char* dest = pages_get_page(inode_get_pnum(write_node, nindex));
+        dest += nindex % 4096;
+        int cpyamnt = min(rem, 4096 - (nindex % 4096));
+        memcpy(dest, buf + bindex, cpyamnt);
+        bindex += cpyamnt;
+        nindex += cpyamnt;
+        rem -= cpyamnt;
+    }
+    return size;    
+}
+
+int
+storage_read(const char* path, char* buf, size_t size, off_t offset)
+{
+    printf("storage_read called, buffer is\n%s\n", buf);
+    inode* node = get_inode(tree_lookup(path));
+    int bindex = 0;
+    int nindex = offset;
+    int rem = size;
+    while (rem > 0) {
+        char* src = pages_get_page(inode_get_pnum(node, nindex));
+        src += nindex % 4096;
+        int cpyamnt = min(rem, 4096 - (nindex % 4096));
+        memcpy(buf + bindex, src, cpyamnt);
+        bindex += cpyamnt;
+        nindex += cpyamnt;
+        rem -= cpyamnt;
+    }
+    return size;
 }
 
 int

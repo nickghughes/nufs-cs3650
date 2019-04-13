@@ -85,7 +85,7 @@ int shrink_inode(inode* node, int size) {
             node->ptrs[i] = 0;
         } else { //need to use indirect
             int* iptrs = pages_get_page(node->iptr); //retrieve memory loc.
-            free_page(iptrs[i - nptrs]); //free the page
+            free_page(iptrs[i - nptrs]); //free the single page
             iptrs[i-nptrs] = 0;
 
             if (i == nptrs) { //if that was the last thing on the page
@@ -99,5 +99,13 @@ int shrink_inode(inode* node, int size) {
 }
 
 // gets the page number for the inode
-int inode_get_pnum(inode* node, int fpn);
+int inode_get_pnum(inode* node, int fpn) {
+    int blocknum = fpn / 4096;
+    if (blocknum < nptrs) {
+        return node->ptrs[blocknum];
+    } else {
+        int* iptrs = pages_get_page(node->iptr);
+        return iptrs[blocknum-nptrs];
+    }
+}
 
