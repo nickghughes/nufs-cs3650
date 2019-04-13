@@ -65,15 +65,21 @@ nufs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         printf("readdir(%s) -> %d\n", path, rv);
         return 0;
     }
-    int ii = 0;
-    slist currname = *dirnames;
-    while(currname.next != NULL) {
-        char currpath[strlen(path)];
+
+    slist* currname = dirnames;
+    while(currname != NULL) {
+        char currpath[strlen(path) + 50];
         strncpy(currpath, path, strlen(path));
-        strncat(currpath, currname.data, 48);
+	if (path[strlen(path)-1] == '/') {
+	    currpath[strlen(path)] = 0;
+	} else {
+ 	    currpath[strlen(path)] = '/';
+	    currpath[strlen(path) + 1] = 0;
+	}
+        strncat(currpath, currname->data, 48);
         nufs_getattr(currpath, &st);
-        filler(buf, currname.data, &st, 0);
-        currname = *currname.next;
+        filler(buf, currname->data, &st, 0);
+        currname = currname->next;
     }
 
     printf("readdir(%s) -> %d\n", path, rv);
@@ -200,7 +206,7 @@ int
 nufs_ioctl(const char* path, int cmd, void* arg, struct fuse_file_info* fi,
            unsigned int flags, void* data)
 {
-    int rv = -1;
+    int rv = 0;
     printf("ioctl(%s, %d, ...) -> %d\n", path, cmd, rv);
     return rv;
 }

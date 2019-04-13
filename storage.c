@@ -77,7 +77,14 @@ storage_read(const char* path, char* buf, size_t size, off_t offset)
 
 int 
 storage_truncate(const char *path, off_t size) {
-    // TODO: This is a pretty vital function
+    int inum = tree_lookup(path);
+    inode* node = get_inode(inum);
+    if (node->size < size) {
+	grow_inode(node, size);
+    } else {
+	shrink_inode(node, size);
+    }
+    return 0;
 }
 
 int
