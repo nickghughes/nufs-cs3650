@@ -12,6 +12,9 @@ typedef struct slist {
 slist* s_cons(const char* text, slist* rest);
 void   s_free(slist* xs);
 slist* s_split(const char* text, char delim);
+char*  s_reconstruct(slist* slist, char delim);
+slist* s_droplast(slist* xs);
+char*  s_getlast(slist* xs);
 
 #endif
 

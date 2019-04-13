@@ -101,16 +101,28 @@ storage_mknod(const char* path, int mode) {
     return -1;
 }
 
-// Don't worry about these next four for now
+// this is used for the removal of a link. If refs are 0, then we also
+// delete the inode associated with the dirent
 int
 storage_unlink(const char* path) {
+    int    link_inode = tree_lookup(path);
+    slist* pathlist = s_split(path, '/');
+    char*  parentpath = s_reconstruct(s_droplast(pathlist), '/');
+    inode* parent = get_inode(tree_lookup(parentpath));
+    char*  nodename = s_getlast(pathlist);
+
+  
+    int rv = directory_delete(parent, nodename);
+
+    s_free(pathlist);
+
+    return rv;
 }
 
 int    storage_link(const char *from, const char *to);
 int    storage_rename(const char *from, const char *to);
 int    storage_set_time(const char* path, const struct timespec ts[2]);
 
-// TODO: ask what this does
 slist* storage_list(const char* path) {
     return directory_list(path);
 }

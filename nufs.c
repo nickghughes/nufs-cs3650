@@ -106,6 +106,7 @@ int
 nufs_unlink(const char *path)
 {
     int rv = -1;
+    rv = storage_unlink(path);
     printf("unlink(%s) -> %d\n", path, rv);
     return rv;
 }
