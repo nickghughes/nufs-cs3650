@@ -37,7 +37,7 @@ directory_lookup(inode* dd, const char* name) {
         dirent* subdirs = pages_get_page(dd->ptrs[0]);
         for (int ii = 0; ii < 64; ++ii) {
             dirent csubdir = subdirs[ii];
-            if (strcmp(name, csubdir.name) == 0) {
+            if (strcmp(name, csubdir.name) == 0 && csubdir.used) {
                 printf("found a match! returning %d\n", csubdir.inum);
                 return csubdir.inum;
             }

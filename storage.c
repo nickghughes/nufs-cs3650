@@ -115,16 +115,32 @@ int
 storage_mknod(const char* path, int mode) {
     // should add a direntry of the correct mode to the
     // directory at the path
+        
+    // check to make sure the node doesn't alreay exist
+    if (tree_lookup(path) != -1) {
+        return -EEXIST;
+    }
+
+    slist* pathlist = s_split(path, '/');
+    char*  parentpath = s_reconstruct(s_droplast(pathlist), '/');
+    int    pnodenum = tree_lookup(parentpath);
+    if (pnodenum < 0) {
+        return -ENOENT;
+    }
+    inode* parent = get_inode(pnodenum);
+    char*  nodename = s_getlast(pathlist);
+    
     int new_inode = alloc_inode();
     inode* node = get_inode(new_inode);
     node->mode = mode;
     node->size = 0;
     node->refs = 1;
-    inode* parent_dir = get_inode(0);
+    inode* parent_dir = get_inode(pnodenum);
     char name[strlen(path) - 1];
     for (int ii = 1; ii < strlen(path); ++ii) {
         name[ii] = path[ii];
     }
+
     directory_put(parent_dir, path+1, new_inode);
     print_directory(node);
     if (new_inode)
