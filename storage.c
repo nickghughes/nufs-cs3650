@@ -73,8 +73,8 @@ storage_write(const char* path, const char* buf, size_t size, off_t offset)
 {
     // get the start point with the path
     inode* write_node = get_inode(tree_lookup(path));
-    if (write_node->size < size) {
-        storage_truncate(path, size);
+    if (write_node->size < size + offset) {
+        storage_truncate(path, size + offset);
     }
     int bindex = 0;
     int nindex = offset;
