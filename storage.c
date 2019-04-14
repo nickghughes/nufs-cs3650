@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include "slist.h"
@@ -29,6 +30,17 @@ storage_init(const char* path) {
         printf("initializing root directory");
         directory_init();
     }
+}
+
+// check to see if the file is available, if not returns -ENOENT
+int
+storage_access(const char* path) {
+
+    int rv = tree_lookup(path);
+    if (rv >= 0)
+        return 0;
+    else
+        return -ENOENT;
 }
 
 // mutates the stat with the inode features at the path

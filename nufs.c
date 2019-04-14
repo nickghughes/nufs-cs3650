@@ -20,8 +20,8 @@ int
 nufs_access(const char *path, int mask)
 {
     int rv = 0;
+    rv = storage_access(path);
     printf("access(%s, %04o) -> %d\n", path, mask, rv);
-
     return rv;
 }
 

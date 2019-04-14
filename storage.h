@@ -11,6 +11,7 @@
 #include "slist.h"
 
 void   storage_init(const char* path);
+int    storage_access(const char* path);
 int    storage_stat(const char* path, struct stat* st);
 int    storage_read(const char* path, char* buf, size_t size, off_t offset);
 int    storage_write(const char* path, const char* buf, size_t size, off_t offset);
