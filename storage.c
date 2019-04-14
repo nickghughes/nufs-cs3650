@@ -140,7 +140,35 @@ storage_unlink(const char* path) {
     return rv;
 }
 
-int    storage_link(const char *from, const char *to);
+int    
+storage_link(const char *from, const char *to) {
+    int tnum = tree_lookup(to);
+    if (tnum < 0) {
+        return tnum;
+    }
+    //some real nonsense to figure out the parent dir of the from path
+    slist* flist = s_split(from, '/');
+    slist* fdir = flist;
+    char* fpath = malloc(strlen(from));
+    fpath[0] = 0;
+    while (fdir->next != NULL) {
+        strncat(fpath, "/", 1);
+        strncat(fpath, fdir->data, 48);
+        fdir = fdir->next;
+    }
+    //look up the directory
+    int dir = tree_lookup(fpath);
+    if (dir < 0) {
+        s_free(flist);
+        free(fpath);
+        return dir;
+    }
+    directory_put(get_inode(dir), fdir->data, tnum);
+    s_free(flist);
+    free(fpath);
+    return 0;
+}
+
 int    storage_rename(const char *from, const char *to);
 int    storage_set_time(const char* path, const struct timespec ts[2]);
 

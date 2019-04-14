@@ -122,7 +122,8 @@ nufs_link(const char *from, const char *to)
 {
     int rv = -1;
     printf("link(%s => %s) -> %d\n", from, to, rv);
-	return rv;
+    rv = storage_link(from, to);
+    return rv;
 }
 
 int
@@ -197,8 +198,8 @@ nufs_utimens(const char* path, const struct timespec ts[2])
 {
     int rv = -1;
     printf("utimens(%s, [%ld, %ld; %ld %ld]) -> %d\n",
-           path, ts[0].tv_sec, ts[0].tv_nsec, ts[1].tv_sec, ts[1].tv_nsec, rv);
-	return rv;
+           path, ts[0].tv_sec, ts[0].tv_nsec, ts[1].tv_sec, ts[1].tv_nsec, rv);	
+    return rv;
 }
 
 // Extended operations
