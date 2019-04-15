@@ -24,14 +24,16 @@ storage_init(const char* path) {
     // initialize the pages
     pages_init(path);
     // allocate a page for the inode list
-    if (!bitmap_get(get_pages_bitmap(), 1)) { 
-        int newpage = alloc_page();
-        printf("second inode page allocated at page %d\n", newpage);
+    if (!bitmap_get(get_pages_bitmap(), 1)) {
+        for (int i = 0; i < 3; i++) {
+            int newpage = alloc_page();
+            printf("second inode page allocated at page %d\n", newpage);
+        }
     }
     // the remaining pages will be alloced when we put data in them
 
     // then we initialize the root directory if it isn't allocated
-    if (!bitmap_get(get_pages_bitmap(), 2)) {
+    if (!bitmap_get(get_pages_bitmap(), 4)) {
         printf("initializing root directory");
         directory_init();
     }
