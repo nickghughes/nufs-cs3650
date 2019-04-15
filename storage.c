@@ -16,6 +16,7 @@
 
 // declaring helpers
 static void storage_update_time(inode* dd, time_t newa, time_t newm);
+static void get_parent_child(const char* path, char* parent, char* child);
 
 // initializes our file structure
 void
@@ -131,15 +132,17 @@ storage_mknod(const char* path, int mode) {
     if (tree_lookup(path) != -1) {
         return -EEXIST;
     }
+ 
+    char* item = malloc(50);
+    char* parent = malloc(strlen(path));
+    get_parent_child(path, parent, item);
 
-    slist* pathlist = s_split(path, '/');
-    char*  parentpath = s_reconstruct(s_droplast(pathlist), '/');
-    int    pnodenum = tree_lookup(parentpath);
+    int    pnodenum = tree_lookup(parent);
     if (pnodenum < 0) {
+        free(item);
+        free(parent);   
         return -ENOENT;
     }
-    inode* parent = get_inode(pnodenum);
-    char*  nodename = s_getlast(pathlist);
     
     int new_inode = alloc_inode();
     inode* node = get_inode(new_inode);
@@ -147,16 +150,11 @@ storage_mknod(const char* path, int mode) {
     node->size = 0;
     node->refs = 1;
     inode* parent_dir = get_inode(pnodenum);
-    char name[strlen(path) - 1];
-    for (int ii = 1; ii < strlen(path); ++ii) {
-        name[ii] = path[ii];
-    }
 
-    directory_put(parent_dir, path+1, new_inode);
-    print_directory(node);
-    if (new_inode)
-        return 0;
-    return -1;
+    directory_put(parent_dir, item, new_inode);
+    free(item);
+    free(parent);
+    return 0;
 }
 
 // this is used for the removal of a link. If refs are 0, then we also
@@ -251,4 +249,18 @@ void storage_update_time(inode* dd, time_t newa, time_t newm)
 
 slist* storage_list(const char* path) {
     return directory_list(path);
+}
+
+static void get_parent_child(const char* path, char* parent, char* child) {
+    slist* flist = s_split(path, '/');
+    slist* fdir = flist;
+    parent[0] = 0;
+    while (fdir->next != NULL) {
+        strncat(parent, "/", 1);
+        strncat(parent, fdir->data, 48);
+        fdir = fdir->next;
+    }
+    memcpy(child, fdir->data, strlen(fdir->data));
+    child[strlen(fdir->data)] = 0;
+    s_free(flist);
 }

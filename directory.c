@@ -32,23 +32,16 @@ directory_lookup(inode* dd, const char* name) {
         printf("this is root, returning 0\n");
         return 0; 
     }
-    else if (dd->mode == 040755) { // dd is a directory, we can go
-                                   // to the pointer and find a dirent*
-        dirent* subdirs = pages_get_page(dd->ptrs[0]);
-        for (int ii = 0; ii < 64; ++ii) {
-            dirent csubdir = subdirs[ii];
-            if (strcmp(name, csubdir.name) == 0 && csubdir.used) {
-                printf("found a match! returning %d\n", csubdir.inum);
-                return csubdir.inum;
-            }
+    dirent* subdirs = pages_get_page(dd->ptrs[0]);
+    for (int ii = 0; ii < 64; ++ii) {
+        dirent csubdir = subdirs[ii];
+        if (strcmp(name, csubdir.name) == 0 && csubdir.used) {
+            printf("found a match! returning %d\n", csubdir.inum);
+            return csubdir.inum;
         }
-        // if we can't find something that matches the name, return -1
-        return -1;
     }
-    else { // dd is a file, we return negative 1
-        printf("not a directory, returning -1\n");
-        return -1;
-    }
+    // if we can't find something that matches the name, return -1
+    return -1;
 }
 
 // not sure if that's any different but imma use this to parse
