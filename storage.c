@@ -59,6 +59,9 @@ storage_stat(const char* path, struct stat* st) {
         inode* node = get_inode(working_inum);
         st->st_mode = node->mode;
         st->st_size = node->size;
+        st->st_atime = node->atim;
+        st->st_mtime = node->mtim;
+        st->st_ctime = node->ctim;
         return 0;
     }
     return -1;
