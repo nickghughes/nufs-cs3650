@@ -212,10 +212,15 @@ storage_readlink(const char* path, char* buf, size_t size) {
     return storage_read(path, buf, size, 0);
 }
 
-int    storage_rename(const char *from, const char *to);
+int    
+storage_rename(const char *from, const char *to) {
+    storage_link(from, to);
+    storage_unlink(to);
+    return 0;
+}
+
 int    storage_set_time(const char* path, const struct timespec ts[2]);
 
 slist* storage_list(const char* path) {
     return directory_list(path);
 }
-
