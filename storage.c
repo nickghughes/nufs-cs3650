@@ -249,9 +249,6 @@ void storage_update_time(inode* dd, time_t newa, time_t newm)
     dd->mtim = newm;
 }
 
-
->>>>>>> e4f4456551bf100c47de4d559c2c72d978ccfa08
-
 slist* storage_list(const char* path) {
     return directory_list(path);
 }
