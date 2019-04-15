@@ -181,6 +181,21 @@ storage_link(const char *from, const char *to) {
     return 0;
 }
 
+int
+storage_symlink(const char* to, const char* from) {
+    int rv = storage_mknod(from, 0120000);
+    if (rv < 0 ) {
+        return rv;
+    }
+    storage_write(from, to, strlen(to), 0);
+    return 0;
+}
+
+int
+storage_readlink(const char* path, char* buf, size_t size) {
+    return storage_read(path, buf, size, 0);
+}
+
 int    storage_rename(const char *from, const char *to);
 int    storage_set_time(const char* path, const struct timespec ts[2]);
 
