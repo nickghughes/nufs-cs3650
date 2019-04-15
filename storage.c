@@ -14,6 +14,10 @@
 #include "bitmap.h"
 #include "util.h"
 
+// declaring helpers
+static void storage_update_time(inode* dd, time_t newa, time_t newm);
+
+// initializes our file structure
 void
 storage_init(const char* path) {
     // initialize the pages
@@ -37,8 +41,12 @@ int
 storage_access(const char* path) {
 
     int rv = tree_lookup(path);
-    if (rv >= 0)
+    if (rv >= 0) {
+        inode* node = get_inode(rv);
+        time_t curtime = time(NULL);
+        node->atim = curtime;
         return 0;
+    }
     else
         return -ENOENT;
 }
@@ -51,6 +59,9 @@ storage_stat(const char* path, struct stat* st) {
         inode* node = get_inode(working_inum);
         st->st_mode = node->mode;
         st->st_size = node->size;
+        st->st_atime = node->atim;
+        st->st_mtime = node->mtim;
+        st->st_ctime = node->ctim;
         return 0;
     }
     return -1;
@@ -219,7 +230,27 @@ storage_rename(const char *from, const char *to) {
     return 0;
 }
 
-int    storage_set_time(const char* path, const struct timespec ts[2]);
+int    
+storage_set_time(const char* path, const struct timespec ts[2])
+{
+    int nodenum = tree_lookup(path);
+    if (nodenum < 0) {
+        return -ENOENT;
+    }
+    inode* node = get_inode(nodenum);
+    storage_update_time(node, ts[0].tv_sec, ts[1].tv_sec);
+    return 0;
+}
+
+static
+void storage_update_time(inode* dd, time_t newa, time_t newm)
+{
+    dd->atim = newa;
+    dd->mtim = newm;
+}
+
+
+>>>>>>> e4f4456551bf100c47de4d559c2c72d978ccfa08
 
 slist* storage_list(const char* path) {
     return directory_list(path);

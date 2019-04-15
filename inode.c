@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "inode.h"
 #include "pages.h"
@@ -49,6 +50,12 @@ alloc_inode() {
     new_node->size = 0;
     new_node->mode = 0;
     new_node->ptrs[0] = alloc_page();
+    
+    time_t curtime = time(NULL);
+    new_node->ctim = curtime;
+    new_node->atim = curtime;
+    new_node->mtim = curtime;
+
     return nodenum;
 }
 
