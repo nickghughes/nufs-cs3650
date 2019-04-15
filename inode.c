@@ -16,6 +16,9 @@ typedef struct inode {
     int size; // bytes
     int ptrs[2]; // direct pointers
     int iptr; // single indirect pointer
+    time_t atim;
+    time_t ctim;
+    time_t mtim;
 } inode; */
 
 void 
@@ -61,10 +64,12 @@ alloc_inode() {
 
 // marks the inode as free in the bitmap and then clears the pointer locations
 void 
-free_inode() {
-    // take a look at malloc for the bitmap
-    
-
+free_inode(int inum) {
+    printf("+ free_inode(%d)\n", inum);
+    inode* node = get_inode(inum);
+    void* bmp = get_inode_bitmap(); 
+    shrink_inode(node, 0);
+    bitmap_put(bmp, inum, 0);
 }
 
 // grows the inode, if size gets too big, it allocates a new page if possible
@@ -116,3 +121,11 @@ int inode_get_pnum(inode* node, int fpn) {
     }
 }
 
+void decrease_refs(int inum)
+{
+    inode* node = get_inode(inum);
+    node->refs = node->refs - 1;
+    if (node->refs < 1) {
+        free_inode(inum);
+    }
+}

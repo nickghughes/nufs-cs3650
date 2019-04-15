@@ -100,14 +100,12 @@ int directory_put(inode* dd, const char* name, int inum) {
 int directory_delete(inode* dd, const char* name) {
     printf("running dir delete on filename %s\n", name);
     dirent* entries = pages_get_page(dd->ptrs[0]);
-    printf("got direntries at block %d", dd->ptrs[0]);
+    printf("got direntries at block %d\n", dd->ptrs[0]);
     for (int ii = 0; ii < dd->size / sizeof(dirent); ++ii) {
         if (strcmp(entries[ii].name, name) == 0) {
             printf("found a deletion match at entry %d\n", ii);
             entries[ii].used = 0;
-            inode* dirnode = get_inode(entries[ii].inum);
-            dirnode->refs = dirnode->refs - 1;
-            bitmap_put(get_inode_bitmap(), entries[ii].inum, 0);
+            decrease_refs(entries[ii].inum);
             return 0;
         }
     }

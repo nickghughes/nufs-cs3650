@@ -172,7 +172,6 @@ storage_unlink(const char* path) {
 
     s_free(pathlist);
     free(parentpath);
-    free(nodename);
 
     return rv;
 }
