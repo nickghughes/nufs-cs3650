@@ -122,7 +122,7 @@ nufs_link(const char *from, const char *to)
 {
     int rv = -1;
     printf("link(%s => %s) -> %d\n", from, to, rv);
-    rv = storage_link(from, to);
+    rv = storage_link(to, from);
     return rv;
 }
 
