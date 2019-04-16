@@ -36,6 +36,7 @@ nufs_getattr(const char *path, struct stat *st)
         st->st_mode = 040755; // directory
         st->st_size = 0;
         st->st_uid = getuid();
+        st->st_nlink = 1;
     }
     else {
         rv = storage_stat(path, st);

@@ -69,6 +69,7 @@ free_inode(int inum) {
     inode* node = get_inode(inum);
     void* bmp = get_inode_bitmap(); 
     shrink_inode(node, 0);
+    free_page(node->ptrs[0]);
     bitmap_put(bmp, inum, 0);
 }
 

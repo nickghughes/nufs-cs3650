@@ -65,6 +65,7 @@ storage_stat(const char* path, struct stat* st) {
         st->st_atime = node->atim;
         st->st_mtime = node->mtim;
         st->st_ctime = node->ctim;
+        st->st_nlink = node->refs;
         return 0;
     }
     return -1;
