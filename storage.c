@@ -185,26 +185,17 @@ storage_link(const char *from, const char *to) {
     if (tnum < 0) {
         return tnum;
     }
-    //some real nonsense to figure out the parent dir of the from path
-    slist* flist = s_split(from, '/');
-    slist* fdir = flist;
-    char* fpath = malloc(strlen(from));
-    fpath[0] = 0;
-    while (fdir->next != NULL) {
-        strncat(fpath, "/", 1);
-        strncat(fpath, fdir->data, 48);
-        fdir = fdir->next;
-    }
-    //look up the directory
-    int dir = tree_lookup(fpath);
-    if (dir < 0) {
-        s_free(flist);
-        free(fpath);
-        return dir;
-    }
-    directory_put(get_inode(dir), fdir->data, tnum);
-    s_free(flist);
-    free(fpath);
+
+    char* fname = malloc(50);
+    char* fparent = malloc(strlen(from));
+    get_parent_child(from, fparent, fname);
+
+    inode* pnode = get_inode(tree_lookup(fparent));
+    directory_put(pnode, fname, tnum);
+    get_inode(tnum)->refs ++;
+    
+    free(fname);
+    free(fparent);
     return 0;
 }
 
@@ -225,8 +216,8 @@ storage_readlink(const char* path, char* buf, size_t size) {
 
 int    
 storage_rename(const char *from, const char *to) {
-    storage_link(from, to);
-    storage_unlink(to);
+    storage_link(to, from);
+    storage_unlink(from);
     return 0;
 }
 
