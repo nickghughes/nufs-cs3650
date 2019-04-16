@@ -164,17 +164,15 @@ storage_mknod(const char* path, int mode) {
 // delete the inode associated with the dirent
 int
 storage_unlink(const char* path) {
-    int    link_inode = tree_lookup(path);
-    slist* pathlist = s_split(path, '/');
-    char*  parentpath = s_reconstruct(s_droplast(pathlist), '/');
-    inode* parent = get_inode(tree_lookup(parentpath));
-    char*  nodename = s_getlast(pathlist);
+    char* nodename = malloc(50);
+    char* parentpath = malloc(strlen(path));
+    get_parent_child(path, parentpath, nodename);
 
-  
+    inode* parent = get_inode(tree_lookup(parentpath));
     int rv = directory_delete(parent, nodename);
 
-    s_free(pathlist);
     free(parentpath);
+    free(nodename);
 
     return rv;
 }
